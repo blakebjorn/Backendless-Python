@@ -3,6 +3,8 @@ Python wrapper for Backendless MBaaS REST API
 
 Dependencies: Requests
 
+This currently only includes very basic functionality (registration, login, updating user fields, logging out). Any/all pull requests are welcome
+
 ### Usage
 
 ```python
@@ -12,7 +14,7 @@ APP_ID = "EXAMPLE-ID-E763-ID00-FF7C-AAEFC5DC2100"
 SECRET_ID = "REST-SECRET-ID-FFBB-F3C7E118B900"
 
 backendless = PyBackendless.Backendless(APP_ID, SECRET_ID)
-#Optional parameters + Default values:
+# Optional parameters + Default values:
   # api_version = "v1" # This probably wont work when they change the version anyways
   # time_out = 30 # requests connection timeout. Returns {'error':'CONNECTION_TIMEOUT'}
   # verbose = True # prints error exceptions to console
@@ -34,3 +36,4 @@ print response
 # Logging out
 response = backendless.logout()
 print response
+```
