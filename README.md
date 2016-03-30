@@ -3,7 +3,9 @@ Python wrapper for Backendless MBaaS REST API
 
 Dependencies: Requests
 
-This currently only includes very basic functionality (registration, login, updating user fields, logging out). Any/all pull requests are welcome
+This currently only includes very basic functionality (registration, login, updating user fields, logging out). 
+This is not official in any capacity, nor am I affiliated with Backendless
+Any/all pull requests are welcome.
 
 ### Usage
 
