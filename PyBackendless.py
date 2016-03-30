@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """
+Author: Blake Anderson, Mar 30 2016
+
 Wrapper for Backendless REST API basic functionality including:
 1) Registering user
 2) Logging in an existing user
@@ -9,12 +11,10 @@ Wrapper for Backendless REST API basic functionality including:
 https://github.com/blakebjorn/Backendless-Python
 Pretty much any pull request will be accepted
 """
+
 from __future__ import print_function
 import requests
 import json
-
-
-import time
 
 class Backendless():
     def __init__(self, application_id, secret_id, api_version="v1", time_out=30, verbose=True):
