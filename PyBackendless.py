@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Author: Blake Anderson, Mar 30 2016
+Author: Blake Anderson, Mar 30 2016, blakebanders@gmail.com
 
-Wrapper for Backendless REST API basic functionality including:
+Wrapper for Backendless REST API basic user functionality including:
 1) Registering user
 2) Logging in an existing user
 3) Updating user objects
@@ -13,8 +13,13 @@ Pretty much any pull request will be accepted
 """
 
 from __future__ import print_function
-import requests
+
 import json
+import os
+import pickle
+
+import requests
+
 
 class Backendless():
     def __init__(self, application_id, secret_id, api_version="v1", time_out=30, verbose=True):
@@ -31,22 +36,23 @@ class Backendless():
                                 
         self.activeLogin = False
         self.verbose = verbose
-        
+        self.userToken = ""
+
     def initialize_user(self, response):
-        self.objectId = response.json().pop('objectId')
-        self.userToken = response.json().pop('user-token')
-        self.userData = response.json()
+        self.objectId = response['objectId']
+        self.userToken = response['user-token']
+        self.userData = response
         self.userHeaders = dict(self.generalHeaders)
         self.userHeaders['user-token'] = self.userToken
         self.activeLogin = True
-        
+
     def post_request(self, url, headers, data):
         try:
             response = requests.post(url, data=data, headers=headers, timeout=self.timeOut)
         except Exception as e:
             if self.verbose:
                 print(e)
-            response = self.handle_response(e)               
+            response = self.handle_response(e)
         return response
 
     def put_request(self, url, headers, data):
@@ -64,9 +70,9 @@ class Backendless():
         except Exception as e:
             if self.verbose:
                 print(e)
-            response = self.handle_response(e)  
+            response = self.handle_response(e)
         return response
-    
+
     def handle_response(self, e):
         if e==requests.exceptions.Timeout:
             response = {'error':'CONNECTION_TIMEOUT'}
@@ -78,11 +84,10 @@ class Backendless():
             response = {'error':'TOO_MANY_REDIRECTS_ERROR'}
         elif e== requests.exceptions.RequestException:
             response = {'error':'UNSPECIFIED_REQUEST_ERROR'}
-        elif e== simplejson.scanner.JSONDecodeError:
-            response = {'error':'JSON_DECODING_ERROR'}
         else:
-            response = {'error':'UNKNOWN_ERROR'}
-        
+            response = {'error': 'UNKNOWN_ERROR: ' + str(e)}
+        return response
+
     def register_user(self, data):
         """
         Creates new user object.
@@ -99,7 +104,7 @@ class Backendless():
         if type(response)==requests.models.Response:
             response = response.json()
         return response
-    
+
     def login_user(self, data):
         """
         Logs in to an existing user. Saves user ID, login token, and user data to the variables: objectId, userToken, and userData, respectively.
@@ -114,18 +119,18 @@ class Backendless():
             requestUrl = self.baseUrl+"/users/login"
             headers = self.generalHeaders
             response = self.post_request(requestUrl, headers, json.dumps(data))
-            if response.status_code==200:
-                self.initialize_user(response)
             if type(response)==requests.models.Response:
+                if response.status_code == 200:
+                    self.initialize_user(response.json())
                 response = response.json()
             return response
         else:
             return {'error':'Must log out before logging in again'}
-    
+
     def update_user_object(self,data):
         """
         Updates a field for the logged in user.
-        
+
         :param data: dictionary with format {"field":"value","field2":"value2"}
         :type data: dict
 
@@ -141,11 +146,11 @@ class Backendless():
             return response
         else:
             return {'error':"Must log in before updating user objects"}
-            
+
     def logout(self):
         """
         Logs out the active user.
-        
+
         :return: Json response
         :rtype : dict
         """
@@ -162,3 +167,67 @@ class Backendless():
             return response
         else:
             return {'error':"Must log in before logging out users"}
+
+    def validate_session(self):
+        """
+        Checks if the loaded user-token is valid.
+
+        :return: Text response
+        :rtype : str
+        """
+        if self.userToken != "":
+            requestUrl = self.baseUrl + "/users/isvalidusertoken/" + self.userToken
+            headers = dict(self.generalHeaders)
+            headers.pop("Content-type")
+            response = self.get_request(requestUrl, headers)
+            if type(response) == requests.models.Response and response.status_code == 200:
+                if response.text == 'true':
+                    self.activeLogin = True
+                return response.text
+            else:
+                return response
+        else:
+            return "No loaded user token"
+
+    def create_token(self, fileName='token.p'):
+        """
+        Saves all data returned from initial log-in response to a pickled object. Returns True on successful file write
+
+        :return: Boolean
+        :rtype : bool
+        """
+        if self.activeLogin:
+            try:
+                pickle.dump(self.userData, open(fileName, 'wb'))
+                return True
+            except Exception as e:
+                print('Error writing token, exception:', e)
+                return False
+        else:
+            return False
+
+    def read_token(self, fileName='token.p'):
+        """
+        Reads a pickled log-in object, and initializes the user.
+        Session must be validated elsewhere to refresh the user login token.
+        Returns True on successful file read/user initialization.
+
+        :return: Boolean
+        :rtype : bool
+        """
+        if os.path.isfile(fileName):
+            try:
+                response = pickle.load(open(fileName, 'rb'))
+                self.loginResponse = response
+                self.objectId = response['objectId']
+                self.userToken = response['user-token']
+                self.userData = response
+                self.userHeaders = dict(self.generalHeaders)
+                self.userHeaders['user-token'] = self.userToken
+                return True
+            except Exception as e:
+                print('Error reading token, exception:', e)
+                return False
+        else:
+            print(fileName, 'does not exist.')
+            return False
