@@ -4,7 +4,7 @@ Python wrapper for Backendless MBaaS REST API
 Dependencies: Requests
 
 This currently only includes very basic functionality (registration, login, updating user fields, logging out). 
-This is not official in any capacity, nor am I affiliated with Backendless
+
 Any/all pull requests are welcome.
 
 ### Usage
@@ -21,7 +21,7 @@ backendless = PyBackendless.Backendless(APP_ID, SECRET_ID)
   # time_out = 30 # requests connection timeout. Returns {'error':'CONNECTION_TIMEOUT'}
   # verbose = True # prints error exceptions to console
 
-# IMPORTANT: all integers/floats must be input as strings in the payload dictionaries
+# IMPORTANT: integers/floats in string table objects must be input as such in the payload dictionaries
 # json.dumps() does not make this conversion, and backendless will issue a 400 response to non-strings
 # If your user identity is the 'name' variable, payload would be {'name':'guy','password':'123456'}
 response = backendless.register_user({"email":"example@email.com","password":"123456"}
