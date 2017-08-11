@@ -13,11 +13,10 @@ Any/all pull requests are welcome.
 import PyBackendless
 
 APP_ID = "EXAMPLE-ID-E763-ID00-FF7C-AAEFC5DC2100"
-SECRET_ID = "REST-SECRET-ID-FFBB-F3C7E118B900"
+REST_KEY = "REST-API-KEY-FFBB-F3C7E118B900"
 
-backendless = PyBackendless.Backendless(APP_ID, SECRET_ID)
+backendless = PyBackendless.Backendless(APP_ID, REST_KEY)
 # Optional parameters + Default values:
-  # api_version = "v1" 
   # time_out = 30 # requests connection timeout. Returns {'error':'CONNECTION_TIMEOUT'}
   # verbose = True # prints error exceptions to console
 
@@ -41,7 +40,7 @@ print response # True or False
 
 # Load user token and re-validate login
 del backendless # delete object and reinitialize
-backendless = PyBackendless.Backendless(APP_ID, SECRET_ID)
+backendless = PyBackendless.Backendless(APP_ID, REST_KEY)
 response = backendless.read_token("userToken.p")
 print response # Same return as initial log-in response
 ret = backendless.validate_session() # Check if user-token is still valid
